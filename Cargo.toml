@@ -1,5 +1,5 @@
 [package]
-name = "my-project"
+name = "toastdb"
 version = "0.1.0"
 authors = ["runner"]
 edition = "2021"
@@ -7,8 +7,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rocket = "0.5.0-rc"
-serde_json = "1.0"
+rocket = "0.5.0-rc.2"
 
 [profile.dev]
-opt-level = 2
+opt-level = 'z'
+
+[profile.release]
+opt-level = 3
