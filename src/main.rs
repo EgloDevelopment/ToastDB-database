@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate rocket;
 mod find;
+mod functions;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -14,8 +15,9 @@ async fn queryOne(table: &str, data: &str) -> String {
     println!("Table: {}", table);
     println!("Data: {}", data);
     let extension: &str = ".json";
+    let query: &str = functions::query_format(data);
     let together = format!("{}{}", table, extension);
-    let result = find::search_one(&together, data);
+    let result = find::search_one(&together, query);
     let result_string = match result {
         Ok(matching_line) => format!("{:?}", matching_line),
         Err(error) => format!(r#"{{"error":"{}"}}"#, error),
