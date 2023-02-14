@@ -8,7 +8,7 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
-//"08934":420696969
+// {"08934":420696969}
 
 #[post("/query-one/<table>", data = "<data>")]
 async fn queryOne(table: &str, data: &str) -> String {
