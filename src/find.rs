@@ -1,7 +1,6 @@
-use std::collections::VecDeque;
+#![allow(non_snake_case)]
 use std::fs::File;
-use std::io::BufWriter;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader};
 
 pub fn search_one(filename: &str, search_string: &str) -> Result<String, std::io::Error> {
     let file = File::open(filename)?;
