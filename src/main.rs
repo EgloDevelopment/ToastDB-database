@@ -3,6 +3,8 @@
 extern crate rocket;
 mod find;
 mod functions;
+mod insert;
+mod delete;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -41,7 +43,21 @@ async fn queryMany(table: &str, data: &str) -> String {
     result_string
 }
 
+#[post("/insert-one/<table>", data = "<data>")]
+async fn insertOne(table: &str, data: &str) -> String {
+    println!("Table: {}", table);
+    println!("Data: {}", data);
+    let extension: &str = ".json";
+    let together = format!("{}{}", table, extension);
+    let result = insert::insert(&together, data);
+    let result_string = match result {
+        Ok(()) => format!(r#"{{"status":"insert successful"}}"#),
+        Err(error) => format!(r#"{{"error":"{}"}}"#, error),
+    };
+    result_string
+}
+
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, queryOne, queryMany])
+    rocket::build().mount("/", routes![index, queryOne, queryMany, insertOne])
 }
