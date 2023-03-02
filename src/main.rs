@@ -1,63 +1,156 @@
 #![allow(non_snake_case)]
 #[macro_use]
 extern crate rocket;
-mod find;
+use serde_json;
+
 mod functions;
-mod insert;
-mod delete;
+mod persistence;
 
 #[get("/")]
-fn index() -> &'static str {
+fn get_index() -> &'static str {
     "Hello, world!"
 }
 
-// {"08934":420696969}
+#[post("/")]
+fn post_index() -> &'static str {
+    "Hello, world!"
+}
 
-#[post("/query-one/<table>", data = "<data>")]
-async fn queryOne(table: &str, data: &str) -> String {
+#[post("/insert/<table>", data = "<value>")]
+fn insert(table: &str, value: &str) -> String {
     println!("Table: {}", table);
-    println!("Data: {}", data);
-    let extension: &str = ".json";
-    let together = format!("{}{}", table, extension);
-    let query: &str = functions::query_format(data);
-    let result = find::search_one(&together, query);
+    println!("Data: {}", value);
+    let start_time = std::time::Instant::now();
+    let json = functions::query_format(value);
+    let result = persistence::insert(table, json);
+    let end_time = std::time::Instant::now();
+    let duration = end_time.duration_since(start_time);
+    println!("Time taken: {}ms", duration.as_millis());
     let result_string = match result {
-        Ok(matching_line) => format!("{:?}", matching_line),
-        Err(error) => format!(r#"{{"error":"{}"}}"#, error),
+        Ok(_) => {
+            format!(r#"{{"status":0}}"#)
+        },
+        Err(error) => format!(r#"{{"status":1, "error":"{}"}}"#, error),
     };
     result_string
 }
 
-#[post("/query-many/<table>", data = "<data>")]
-async fn queryMany(table: &str, data: &str) -> String {
+#[post("/find/<table>", data = "<value>")]
+fn find(table: &str, value: &str) -> String {
     println!("Table: {}", table);
-    println!("Data: {}", data);
-    let extension: &str = ".json";
-    let together = format!("{}{}", table, extension);
-    let query: &str = functions::query_format(data);
-    let result = find::search_many(&together, query);
+    println!("Data: {}", value);
+    let start_time = std::time::Instant::now();
+    let json = functions::query_format(value);
+    let result = persistence::find(table, json);
+    let end_time = std::time::Instant::now();
+    let duration = end_time.duration_since(start_time);
+    println!("Time taken: {}ms", duration.as_millis());
     let result_string = match result {
-        Ok(matching_lines) => format!("{:?}", matching_lines),
-        Err(error) => format!(r#"{{"error":"{}"}}"#, error),
+        Ok(query_result) => {
+            let json_string = serde_json::to_string(&query_result).unwrap();
+            format!(r#"{{"status":0, "result":{}}}"#, json_string)
+        },
+        Err(error) => format!(r#"{{"status":1, "error":"{}"}}"#, error),
     };
     result_string
 }
 
-#[post("/insert-one/<table>", data = "<data>")]
-async fn insertOne(table: &str, data: &str) -> String {
+#[post("/delete/<table>", data = "<value>")]
+fn delete(table: &str, value: &str) -> String {
     println!("Table: {}", table);
-    println!("Data: {}", data);
-    let extension: &str = ".json";
-    let together = format!("{}{}", table, extension);
-    let result = insert::insert(&together, data);
+    println!("Data: {}", value);
+    let start_time = std::time::Instant::now();
+    let json = functions::query_format(value);
+    let result = persistence::delete(table, json);
+    let end_time = std::time::Instant::now();
+    let duration = end_time.duration_since(start_time);
+    println!("Time taken: {}ms", duration.as_millis());
     let result_string = match result {
-        Ok(()) => format!(r#"{{"status":"insert successful"}}"#),
-        Err(error) => format!(r#"{{"error":"{}"}}"#, error),
+        Ok(_) => {
+            format!(r#"{{"status":0}}"#)
+        },
+        Err(error) => format!(r#"{{"status":1, "error":"{}"}}"#, error),
     };
     result_string
 }
+
+#[post("/create-table/<table>")]
+fn create_table(table: &str) -> String {
+    println!("Table: {}", table);
+    let start_time = std::time::Instant::now();
+    let result = persistence::create_table(table);
+    let end_time = std::time::Instant::now();
+    let duration = end_time.duration_since(start_time);
+    println!("Time taken: {}ms", duration.as_millis());
+    let result_string = match result {
+        Ok(_) => format!(r#"{{"status":0}}"#),
+        Err(error) => format!(r#"{{"status":1, "error":"{}"}}"#, error),
+    };
+    result_string
+}
+
+#[post("/delete-table/<table>")]
+fn delete_table(table: &str) -> String {
+    println!("Table: {}", table);
+    let start_time = std::time::Instant::now();
+    let result = persistence::delete_table(table);
+    let end_time = std::time::Instant::now();
+    let duration = end_time.duration_since(start_time);
+    println!("Time taken: {}ms", duration.as_millis());
+    let result_string = match result {
+        Ok(_) => format!(r#"{{"status":0}}"#),
+        Err(error) => format!(r#"{{"status":1, "error":"{}"}}"#, error),
+    };
+    result_string
+}
+
+#[post("/rename-table/<old_name>/<new_name>")]
+fn rename_table(old_name: &str, new_name: &str) -> String {
+    println!("Old table name: {}", old_name);
+    println!("New table name: {}", new_name);
+    let start_time = std::time::Instant::now();
+    let result = persistence::rename_table(old_name, new_name);
+    let end_time = std::time::Instant::now();
+    let duration = end_time.duration_since(start_time);
+    println!("Time taken: {}ms", duration.as_millis());
+    let result_string = match result {
+        Ok(_) => format!(r#"{{"status":0}}"#),
+        Err(error) => format!(r#"{{"status":1, "error":"{}"}}"#, error),
+    };
+    result_string
+}
+
+#[post("/list-tables")]
+fn list_tables() -> String {
+    let start_time = std::time::Instant::now();
+    let result = persistence::list_tables();
+    let end_time = std::time::Instant::now();
+    let duration = end_time.duration_since(start_time);
+    println!("Time taken: {}ms", duration.as_millis());
+    let result_string = match result {
+        Ok(query_result) => {
+            let json_string = serde_json::to_string(&query_result).unwrap();
+            format!(r#"{{"status":0, "result":{}}}"#, json_string)
+        },
+        Err(error) => format!(r#"{{"status":1, "error":"{}"}}"#, error),
+    };
+    result_string
+}
+
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, queryOne, queryMany, insertOne])
+    rocket::build().mount("/", routes![
+        get_index, 
+        post_index, 
+
+        insert,
+        find,
+        delete,
+
+        create_table,
+        delete_table,
+        rename_table,
+        list_tables
+    ])
 }
