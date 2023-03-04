@@ -19,7 +19,6 @@ fn post_index() -> &'static str {
 #[post("/insert/<table>", data = "<value>")]
 fn insert(table: &str, value: &str) -> String {
     println!("Table: {}", table);
-    println!("Data: {}", value);
     let start_time = std::time::Instant::now();
     let json = functions::query_format(value);
     let result = persistence::insert(table, json);
@@ -38,7 +37,6 @@ fn insert(table: &str, value: &str) -> String {
 #[post("/find/<table>", data = "<value>")]
 fn find(table: &str, value: &str) -> String {
     println!("Table: {}", table);
-    println!("Data: {}", value);
     let start_time = std::time::Instant::now();
     let json = functions::query_format(value);
     let result = persistence::find(table, json);
@@ -58,7 +56,6 @@ fn find(table: &str, value: &str) -> String {
 #[post("/delete/<table>", data = "<value>")]
 fn delete(table: &str, value: &str) -> String {
     println!("Table: {}", table);
-    println!("Data: {}", value);
     let start_time = std::time::Instant::now();
     let json = functions::query_format(value);
     let result = persistence::delete(table, json);
