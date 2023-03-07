@@ -16,6 +16,11 @@ fn post_index() -> &'static str {
     "Hello, world!"
 }
 
+#[post("/test")]
+fn test() -> &'static str {
+    r#"{"status":0}"#
+}
+
 #[post("/insert/<table>", data = "<value>")]
 fn insert(table: &str, value: &str) -> String {
     println!("Table: {}", table);
@@ -140,6 +145,8 @@ fn rocket() -> _ {
     rocket::build().mount("/", routes![
         get_index, 
         post_index, 
+
+        test,
 
         insert,
         find,
