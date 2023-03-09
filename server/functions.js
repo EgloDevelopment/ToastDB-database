@@ -37,7 +37,7 @@ router.post('/find/:table', (req, res) => {
                 var url = val.url + "/find/" + table
                 let result = await axios.post(url, req.body)
                 for (const val of result.data) {
-                    JsonAggreagate.push(val)
+                    JsonAggreagate.push(JSON.parse(val))
                 };
             }
             res.json({"status":0,"result":JsonAggreagate});
